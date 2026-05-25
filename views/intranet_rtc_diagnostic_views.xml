@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="intranet_rtc_diagnostic_view_form" model="ir.ui.view">
+        <field name="name">intranet.rtc.diagnostic.form</field>
+        <field name="model">intranet.rtc.diagnostic</field>
+        <field name="arch" type="xml">
+            <form string="Intranet RTC Diagnostics">
+                <header>
+                    <button name="action_run_diagnostics" type="object" string="Run Intranet RTC Diagnostics" class="btn-primary"/>
+                </header>
+                <sheet>
+                    <group>
+                        <field name="name" readonly="1"/>
+                        <field name="warning_text" readonly="1" nolabel="1" placeholder="No warnings."/>
+                        <field name="status_json" readonly="1" nolabel="1" widget="text"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="intranet_rtc_diagnostic_action" model="ir.actions.act_window">
+        <field name="name">Intranet RTC Diagnostics</field>
+        <field name="res_model">intranet.rtc.diagnostic</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="context">{}</field>
+    </record>
+
+    <menuitem id="intranet_rtc_diagnostic_menu" name="Intranet RTC" parent="base.menu_custom" action="intranet_rtc_diagnostic_action" groups="base.group_system" sequence="95"/>
+</odoo>

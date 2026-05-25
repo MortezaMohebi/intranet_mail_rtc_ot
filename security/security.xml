@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="group_intranet_rtc_manager" model="res.groups">
+        <field name="name">Intranet RTC Manager</field>
+        <field name="category_id" ref="base.module_category_administration_administration"/>
+        <field name="implied_ids" eval="[(4, ref('base.group_system'))]"/>
+    </record>
+
+    <record id="group_intranet_rtc_technical" model="res.groups">
+        <field name="name">Intranet RTC Technical</field>
+        <field name="category_id" ref="base.module_category_administration_administration"/>
+        <field name="implied_ids" eval="[(4, ref('intranet_mail_rtc_ot.group_intranet_rtc_manager'))]"/>
+    </record>
+</odoo>

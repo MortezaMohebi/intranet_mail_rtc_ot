@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <record id="param_enabled" model="ir.config_parameter">
+        <field name="key">intranet_mail_rtc_ot.enabled</field>
+        <field name="value">True</field>
+    </record>
+    <record id="param_force_empty_ice" model="ir.config_parameter">
+        <field name="key">intranet_mail_rtc_ot.force_empty_ice_servers</field>
+        <field name="value">True</field>
+    </record>
+    <record id="param_allow_custom_local_ice" model="ir.config_parameter">
+        <field name="key">intranet_mail_rtc_ot.allow_custom_local_ice_servers</field>
+        <field name="value">False</field>
+    </record>
+    <record id="param_allowed_ice_suffixes" model="ir.config_parameter">
+        <field name="key">intranet_mail_rtc_ot.allowed_ice_host_suffixes</field>
+        <field name="value">.local,.lan,.internal,.intra</field>
+    </record>
+    <record id="param_allow_local_sfu" model="ir.config_parameter">
+        <field name="key">intranet_mail_rtc_ot.allow_local_sfu</field>
+        <field name="value">False</field>
+    </record>
+    <record id="param_allowed_sfu_hosts" model="ir.config_parameter">
+        <field name="key">intranet_mail_rtc_ot.allowed_sfu_hosts</field>
+        <field name="value"></field>
+    </record>
+    <record id="param_disable_twilio" model="ir.config_parameter">
+        <field name="key">intranet_mail_rtc_ot.disable_twilio_rtc</field>
+        <field name="value">True</field>
+    </record>
+    <record id="param_disable_push" model="ir.config_parameter">
+        <field name="key">intranet_mail_rtc_ot.disable_external_push</field>
+        <field name="value">True</field>
+    </record>
+    <record id="param_disable_gif" model="ir.config_parameter">
+        <field name="key">intranet_mail_rtc_ot.disable_external_gif</field>
+        <field name="value">True</field>
+    </record>
+    <record id="param_disable_translate" model="ir.config_parameter">
+        <field name="key">intranet_mail_rtc_ot.disable_external_translate</field>
+        <field name="value">True</field>
+    </record>
+    <record id="param_disable_link_preview" model="ir.config_parameter">
+        <field name="key">intranet_mail_rtc_ot.disable_external_link_preview</field>
+        <field name="value">True</field>
+    </record>
+    <record id="param_use_local_blur" model="ir.config_parameter">
+        <field name="key">intranet_mail_rtc_ot.use_local_blur_assets</field>
+        <field name="value">True</field>
+    </record>
+    <record id="param_debug_logs" model="ir.config_parameter">
+        <field name="key">intranet_mail_rtc_ot.debug_rtc_logs</field>
+        <field name="value">False</field>
+    </record>
+</odoo>

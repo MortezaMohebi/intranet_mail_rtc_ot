@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form_inherit_intranet_rtc" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.intranet.rtc</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="mail.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <setting id="message_translation_setting" position="after">
+                <setting id="intranet_rtc_mode_setting" string="Intranet RTC Mode" help="Block public RTC fallbacks and make Discuss calls safe for locked intranet networks." groups="base.group_system">
+                    <field name="intranet_rtc_enabled"/>
+                    <div class="content-group" invisible="not intranet_rtc_enabled">
+                        <div class="row mt16">
+                            <label for="intranet_rtc_force_empty_ice_servers" class="col-lg-4"/>
+                            <field name="intranet_rtc_force_empty_ice_servers"/>
+                        </div>
+                        <div class="row mt16">
+                            <label for="intranet_rtc_allow_custom_local_ice_servers" class="col-lg-4"/>
+                            <field name="intranet_rtc_allow_custom_local_ice_servers"/>
+                        </div>
+                        <div class="row mt16" invisible="not intranet_rtc_allow_custom_local_ice_servers">
+                            <label for="intranet_rtc_allowed_ice_host_suffixes" class="col-lg-4"/>
+                            <field name="intranet_rtc_allowed_ice_host_suffixes" placeholder=".local,.lan,.internal,.intra"/>
+                        </div>
+                        <div class="row mt16">
+                            <label for="intranet_rtc_allow_local_sfu" class="col-lg-4"/>
+                            <field name="intranet_rtc_allow_local_sfu"/>
+                        </div>
+                        <div class="row mt16" invisible="not intranet_rtc_allow_local_sfu">
+                            <label for="intranet_rtc_allowed_sfu_hosts" class="col-lg-4"/>
+                            <field name="intranet_rtc_allowed_sfu_hosts" placeholder="rtc.local,10.10.0.20"/>
+                        </div>
+                        <div class="row mt16">
+                            <label for="intranet_rtc_disable_twilio_rtc" class="col-lg-4"/>
+                            <field name="intranet_rtc_disable_twilio_rtc"/>
+                        </div>
+                        <div class="row mt16">
+                            <label for="intranet_rtc_disable_external_push" class="col-lg-4"/>
+                            <field name="intranet_rtc_disable_external_push"/>
+                        </div>
+                        <div class="row mt16">
+                            <label for="intranet_rtc_disable_external_gif" class="col-lg-4"/>
+                            <field name="intranet_rtc_disable_external_gif"/>
+                        </div>
+                        <div class="row mt16">
+                            <label for="intranet_rtc_disable_external_translate" class="col-lg-4"/>
+                            <field name="intranet_rtc_disable_external_translate"/>
+                        </div>
+                        <div class="row mt16">
+                            <label for="intranet_rtc_disable_external_link_preview" class="col-lg-4"/>
+                            <field name="intranet_rtc_disable_external_link_preview"/>
+                        </div>
+                        <div class="row mt16">
+                            <label for="intranet_rtc_use_local_blur_assets" class="col-lg-4"/>
+                            <field name="intranet_rtc_use_local_blur_assets"/>
+                        </div>
+                        <div class="row mt16">
+                            <label for="intranet_rtc_debug_logs" class="col-lg-4"/>
+                            <field name="intranet_rtc_debug_logs"/>
+                        </div>
+                        <div class="mt16">
+                            <button name="action_open_intranet_rtc_diagnostics" type="object" string="Run Intranet RTC Diagnostics" class="btn btn-secondary" icon="fa-stethoscope"/>
+                        </div>
+                    </div>
+                </setting>
+            </setting>
+        </field>
+    </record>
+</odoo>
