@@ -38,3 +38,10 @@
 - Moved diagnostics from the generic Technical menu to Discuss > Configuration.
 - Redesigned diagnostics form with grouped status fields, warnings, and a technical JSON tab.
 - Sanitized diagnostic ICE output to avoid exposing TURN usernames or credentials.
+## 18.0.1.0.5
+
+- Expanded README with a practical user and administrator guide.
+- Documented how peer-to-peer WebRTC works in intranet mode.
+- Explained why same-LAN users can hear each other while home/remote users may need VPN, local TURN, or local SFU.
+- Added setup guidance for direct P2P, local TURN, local SFU, browser permissions, diagnostics, and troubleshooting.
+
