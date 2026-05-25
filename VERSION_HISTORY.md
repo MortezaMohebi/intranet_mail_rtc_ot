@@ -63,3 +63,11 @@
 - Improve safe diagnostics for TURNS records.
 - Preserve direct P2P toggle behavior from 18.0.1.0.6.
 - Preserve blocked external fallback behavior.
+
+## 18.0.1.0.8
+
+- Fix module upgrade failure caused by duplicate `ir.config_parameter` XML records.
+- Stop loading default config parameters through XML records.
+- Keep safe defaults managed by `post_init_hook` and `res.config.settings` instead.
+- Preserve existing user-configured values during upgrades.
+- Preserve all `turns:` support from 18.0.1.0.7.
