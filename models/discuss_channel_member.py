@@ -12,6 +12,7 @@ from .intranet_rtc_policy import (
     is_allowed_sfu_url,
     is_direct_p2p_fallback_enabled,
     is_enabled,
+    get_ice_transport_policy,
     sanitize_ice_servers,
 )
 
@@ -78,6 +79,7 @@ class DiscussChannelMember(models.Model):
                 "Rtc",
                 {
                     "iceServers": effective_ice_servers,
+                    "iceTransportPolicy": get_ice_transport_policy(self.env),
                     "serverInfo": server_info,
                 },
             )

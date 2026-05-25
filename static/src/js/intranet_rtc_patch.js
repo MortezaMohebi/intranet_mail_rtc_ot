@@ -158,24 +158,30 @@ function sanitizeIntranetIceServers(iceServers) {
         .filter(Boolean);
 }
 
+
+function isTurnUrl(url) {
+    const value = String(url || "").toLowerCase();
+    return value.startsWith("turn:") || value.startsWith("turns:");
+}
+
+function sanitizeIceTransportPolicy(value) {
+    return ["all", "relay"].includes(value) ? value : "all";
+}
+
 /**
  * @param {Array<RTCIceServer>} iceServers
  * @returns {Boolean}
  */
 function hasTurn(iceServers) {
     return iceServers.some((server) => {
-        let hasTurn = false;
-        if (server.url) {
-            hasTurn = server.url.startsWith("turn:");
+        if (server.url && isTurnUrl(server.url)) {
+            return true;
         }
-        if (server.urls) {
-            if (Array.isArray(server.urls)) {
-                hasTurn = server.urls.some((url) => url.startsWith("turn:")) || hasTurn;
-            } else {
-                hasTurn = server.urls.startsWith("turn:") || hasTurn;
-            }
+        if (!server.urls) {
+            return false;
         }
-        return hasTurn;
+        const urls = Array.isArray(server.urls) ? server.urls : [server.urls];
+        return urls.some((url) => isTurnUrl(url));
     });
 }
 
@@ -314,6 +320,11 @@ export class Rtc extends Record {
     iceServers = Record.attr(undefined, {
         compute() {
             return this.iceServers ? sanitizeIntranetIceServers(this.iceServers) : GET_DEFAULT_ICE_SERVERS();
+        },
+    });
+    iceTransportPolicy = Record.attr("all", {
+        compute() {
+            return sanitizeIceTransportPolicy(this.iceTransportPolicy);
         },
     });
     selfSession = Record.one("RtcSession");
@@ -693,6 +704,7 @@ export class Rtc extends Record {
             selfSessionId: this.selfSession?.id,
             channelId: this.state.channel?.id,
             iceServers: summarizeIceServersForLog(this.iceServers),
+            iceTransportPolicy: this.iceTransportPolicy,
             hasServerInfo: Boolean(this.serverInfo),
             browser: summarizeBrowserRtcEnvironment(),
         });
@@ -703,6 +715,7 @@ export class Rtc extends Record {
         this.p2pService.connect(this.selfSession.id, this.state.channel.id, {
             info: this.formatInfo(),
             iceServers: this.iceServers,
+            iceTransportPolicy: this.iceTransportPolicy,
         });
         this.network = new Network(this.p2pService);
         this.updateUpload();
@@ -1067,6 +1080,7 @@ export class Rtc extends Record {
         intranetRtcLog("info", "joinCall RPC completed", {
             channelId: channel?.id,
             iceServers: summarizeIceServersForLog(this.iceServers),
+            iceTransportPolicy: this.iceTransportPolicy,
             hasServerInfo: Boolean(this.serverInfo),
             selfSessionId: this.selfSession?.id,
         });

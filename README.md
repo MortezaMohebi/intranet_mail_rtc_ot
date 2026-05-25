@@ -394,3 +394,33 @@ The setting **Allow Direct P2P Fallback** controls what happens when intranet mo
 - Disabled: Odoo refuses to start the RTC call unless a validated local ICE server or allowed local SFU is configured. This is useful when you do not want remote/home users to enter a call that cannot carry media.
 
 Disabling this setting does not re-enable Google STUN or Twilio. External fallbacks remain blocked.
+
+
+## Secure TURN over TLS (`turns:`)
+
+Version 18.0.1.0.7 supports Odoo ICE server records with the `turns:` type. Use this when remote or home users cannot directly reach office clients, but you still need a self-hosted relay instead of Google/Twilio/public services.
+
+Recommended TURNS record for TCP 443:
+
+```text
+Type: turns:
+URI: turn.example.com:443?transport=tcp
+Username: your configured TURN username
+Credential: your configured TURN password
+```
+
+Enter only the URI part in Odoo. Do not include the `turns:` prefix inside the URI field. If a full URL is pasted by mistake, the module normalizes it before generating the browser ICE URL, preventing invalid values such as `turns:turns:...`.
+
+For strict relay-only operation, set **ICE Transport Policy** to **Relay only** after a valid local TURN/TURNS server is configured. Leave it as **All candidates** for normal backward-compatible intranet behavior.
+
+Diagnostics intentionally show only safe metadata:
+
+```json
+{
+  "urls": "turns:turn.example.com:443?transport=tcp",
+  "has_username": true,
+  "has_credential": true
+}
+```
+
+The real credential is sent only to the browser as part of WebRTC ICE configuration and is never displayed in diagnostics, chatter, or debug logs. Rotate TURN credentials if they were copied into browser screenshots, tickets, or shared logs during testing.

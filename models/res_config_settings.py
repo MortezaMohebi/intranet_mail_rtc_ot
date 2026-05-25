@@ -16,7 +16,7 @@ class ResConfigSettings(models.TransientModel):
         help="Prevent Discuss calls from using public STUN/TURN/SFU services.",
     )
     intranet_rtc_force_empty_ice_servers = fields.Boolean(
-        string="Force Empty ICE Servers",
+        string="Allow Direct P2P Fallback",
         config_parameter="intranet_mail_rtc_ot.force_empty_ice_servers",
         default=True,
         help=(
@@ -28,7 +28,19 @@ class ResConfigSettings(models.TransientModel):
         string="Allow Custom Local ICE Servers",
         config_parameter="intranet_mail_rtc_ot.allow_custom_local_ice_servers",
         default=False,
-        help="Allow only private/local STUN or TURN records configured in Discuss ICE Servers.",
+        help="Allow only private/local STUN, TURN, or TURNS records configured in Discuss ICE Servers.",
+    )
+
+    intranet_rtc_ice_transport_policy = fields.Selection(
+        selection=[("all", "All candidates"), ("relay", "Relay only")],
+        string="ICE Transport Policy",
+        config_parameter="intranet_mail_rtc_ot.ice_transport_policy",
+        default="all",
+        help=(
+            "Use 'All candidates' for normal intranet behavior. Use 'Relay only' "
+            "when browsers must use a configured local TURN/TURNS relay and must not "
+            "try direct host-candidate P2P."
+        ),
     )
     intranet_rtc_allowed_ice_host_suffixes = fields.Char(
         string="Allowed Internal ICE Host Suffixes",
@@ -90,7 +102,6 @@ class ResConfigSettings(models.TransientModel):
         help="Enable limited debug logs without exposing secrets.",
     )
 
-
     def get_values(self):
         """Read boolean parameters explicitly so unchecked values stay unchecked."""
         values = super().get_values()
@@ -133,6 +144,13 @@ class ResConfigSettings(models.TransientModel):
                     "y",
                     "on",
                 }
+        ice_transport_policy = params.get_param(
+            "intranet_mail_rtc_ot.ice_transport_policy",
+            "all",
+        )
+        values["intranet_rtc_ice_transport_policy"] = (
+            ice_transport_policy if ice_transport_policy in {"all", "relay"} else "all"
+        )
         return values
 
     def set_values(self):
@@ -154,6 +172,11 @@ class ResConfigSettings(models.TransientModel):
         }
         for field_name, key in boolean_key_by_field.items():
             params.set_param(key, "True" if self[field_name] else "False")
+        policy = self.intranet_rtc_ice_transport_policy or "all"
+        params.set_param(
+            "intranet_mail_rtc_ot.ice_transport_policy",
+            policy if policy in {"all", "relay"} else "all",
+        )
 
     def action_open_intranet_rtc_diagnostics(self):
         """Open a fresh intranet RTC diagnostics wizard."""

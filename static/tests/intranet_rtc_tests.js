@@ -35,6 +35,17 @@ QUnit.module("intranet_mail_rtc_ot", () => {
         assert.deepEqual(p2p._iceServers, localIce);
     });
 
+    QUnit.test("PeerToPeer.connect preserves TURNS ICE list and relay policy", (assert) => {
+        assert.expect(2);
+        const localIce = [
+            { urls: ["turns:turn.internal:443?transport=tcp"], username: "u", credential: "p" },
+        ];
+        const p2p = new PeerToPeer({ enableStreaming: false });
+        p2p.connect(1, 1, { iceServers: localIce, iceTransportPolicy: "relay" });
+        assert.deepEqual(p2p._iceServers, localIce);
+        assert.strictEqual(p2p._iceTransportPolicy, "relay");
+    });
+
     QUnit.test("BlurManager uses local Odoo MediaPipe URL", (assert) => {
         assert.expect(1);
         const original = window.SelfieSegmentation;

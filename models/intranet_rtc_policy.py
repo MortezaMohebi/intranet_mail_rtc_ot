@@ -18,6 +18,92 @@ FORBIDDEN_HOST_FRAGMENTS = (
 
 DEFAULT_INTERNAL_SUFFIXES = (".local", ".lan", ".internal", ".intra")
 ICE_SCHEMES = ("stun:", "stuns:", "turn:", "turns:")
+TURN_SCHEMES = ("turn:", "turns:")
+
+_DIGIT_TRANSLATION = str.maketrans(
+    "۰۱۲۳۴۵۶۷۸۹٠١٢٣٤٥٦٧٨٩",
+    "01234567890123456789",
+)
+
+
+def normalize_ascii_digits(value):
+    """Return *value* with Persian and Arabic-Indic digits converted to ASCII."""
+    return str(value or "").translate(_DIGIT_TRANSLATION)
+
+
+def strip_ice_scheme(value):
+    """Strip leading ICE URL schemes from a URI part.
+
+    Administrators sometimes paste a complete URL such as
+    ``turns:turn.example.com:443?transport=tcp`` into Odoo's URI field.
+    Odoo stores the scheme separately in ``server_type``, so the URI part is
+    normalized before final URL generation to prevent double-prefix bugs.
+    """
+    normalized = normalize_ascii_digits(value).strip()
+    while True:
+        lowered = normalized.lower()
+        matched_scheme = next(
+            (scheme for scheme in ICE_SCHEMES if lowered.startswith(scheme)),
+            None,
+        )
+        if not matched_scheme:
+            break
+        normalized = normalized[len(matched_scheme):].lstrip("/")
+    return normalized
+
+
+def split_ice_uri(uri):
+    """Return ``(host, port, query)`` from an ICE URI without its scheme."""
+    normalized = strip_ice_scheme(uri)
+    endpoint = normalized.split("?", 1)[0].split("/", 1)[0].strip()
+    query = normalized.split("?", 1)[1] if "?" in normalized else ""
+    host = ""
+    port = ""
+    if endpoint.startswith("[") and "]" in endpoint:
+        end = endpoint.index("]")
+        host = endpoint[1:end]
+        remainder = endpoint[end + 1:]
+        if remainder.startswith(":"):
+            port = remainder[1:]
+    else:
+        if ":" in endpoint:
+            host, port = endpoint.rsplit(":", 1)
+        else:
+            host = endpoint
+    return host.strip().lower().rstrip("."), port.strip(), query
+
+
+def normalize_ice_uri(uri):
+    """Return a normalized ICE URI part without ``stun:``, ``turn:``, or ``turns:``."""
+    normalized = strip_ice_scheme(uri)
+    host, port, _query = split_ice_uri(normalized)
+    if not host:
+        return normalized
+    if port:
+        normalized_port = str(int(port)) if port.isdigit() else port
+        endpoint = normalized.split("?", 1)[0]
+        suffix = "?" + normalized.split("?", 1)[1] if "?" in normalized else ""
+        if endpoint.startswith("[") and "]" in endpoint:
+            host_part = endpoint[:endpoint.index("]") + 1]
+        else:
+            host_part = endpoint.rsplit(":", 1)[0]
+        normalized = f"{host_part}:{normalized_port}{suffix}"
+    return normalized
+
+
+def is_valid_ice_port(port):
+    """Return whether *port* is empty or a valid TCP/UDP port number."""
+    if not port:
+        return True
+    if not str(port).isdigit():
+        return False
+    return 1 <= int(port) <= 65535
+
+
+def build_ice_url(server_type, uri):
+    """Build a browser RTCConfiguration ICE URL without double prefixes."""
+    server_type = str(server_type or "").strip().lower().rstrip(":")
+    return f"{server_type}:{normalize_ice_uri(uri)}"
 
 
 def get_bool_param(env, key, default=False):
@@ -40,8 +126,6 @@ def is_enabled(env):
     return get_bool_param(env, "intranet_mail_rtc_ot.enabled", default=True)
 
 
-
-
 def is_direct_p2p_fallback_enabled(env):
     """Return whether host-candidate P2P fallback is allowed without local ICE/SFU."""
     return get_bool_param(
@@ -49,6 +133,17 @@ def is_direct_p2p_fallback_enabled(env):
         "intranet_mail_rtc_ot.force_empty_ice_servers",
         default=True,
     )
+
+
+def get_ice_transport_policy(env):
+    """Return the browser ICE transport policy, constrained to safe values."""
+    raw_value = env["ir.config_parameter"].sudo().get_param(
+        "intranet_mail_rtc_ot.ice_transport_policy",
+        "all",
+    )
+    value = str(raw_value or "all").strip().lower()
+    return value if value in {"all", "relay"} else "all"
+
 
 def is_debug_enabled(env):
     """Return whether verbose RTC debug logs are enabled."""
@@ -71,18 +166,12 @@ def _is_forbidden_host(host):
 
 
 def _extract_host_from_ice_url(ice_url):
-    """Extract a safe host string from a STUN/TURN URI."""
+    """Extract a safe host string from a STUN/TURN/TURNS URI."""
     value = str(ice_url or "").strip()
     lower = value.lower()
     if not any(lower.startswith(scheme) for scheme in ICE_SCHEMES):
         return ""
-    remainder = value.split(":", 1)[1].lstrip("/")
-    remainder = remainder.split("?", 1)[0].split("/", 1)[0]
-    if "@" in remainder:
-        remainder = remainder.rsplit("@", 1)[1]
-    if remainder.startswith("[") and "]" in remainder:
-        return remainder[1:remainder.index("]")].lower()
-    return remainder.split(":", 1)[0].lower().rstrip(".")
+    return split_ice_uri(value)[0]
 
 
 def _extract_host_from_url(url):
@@ -141,19 +230,29 @@ def sanitize_ice_servers(env, ice_servers):
     """Filter ICE servers so only private/local hosts remain in intranet mode."""
     if not is_enabled(env):
         return ice_servers or []
-    if not get_bool_param(env, "intranet_mail_rtc_ot.allow_custom_local_ice_servers", default=False):
+    if not get_bool_param(
+        env,
+        "intranet_mail_rtc_ot.allow_custom_local_ice_servers",
+        default=False,
+    ):
         if is_direct_p2p_fallback_enabled(env):
             debug_log(
                 env,
-                "ICE policy: custom local ICE servers disabled; direct P2P fallback will use empty iceServers list.",
+                "ICE policy: custom local ICE servers disabled; direct P2P "
+                "fallback will use empty iceServers list.",
             )
         else:
             debug_log(
                 env,
-                "ICE policy: custom local ICE servers disabled and direct P2P fallback disabled; no ICE servers are available.",
+                "ICE policy: custom local ICE servers disabled and direct "
+                "P2P fallback disabled; no ICE servers are available.",
             )
         return []
-    debug_log(env, "ICE policy: sanitizing %s configured ICE server entries.", len(ice_servers or []))
+    debug_log(
+        env,
+        "ICE policy: sanitizing %s configured ICE server entries.",
+        len(ice_servers or []),
+    )
     sanitized = []
     for server in ice_servers or []:
         if not isinstance(server, dict):

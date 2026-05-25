@@ -277,6 +277,16 @@ export class Peer {
     }
 }
 
+
+function isTurnUrl(url) {
+    const value = String(url || "").toLowerCase();
+    return value.startsWith("turn:") || value.startsWith("turns:");
+}
+
+function sanitizeIceTransportPolicy(value) {
+    return ["all", "relay"].includes(value) ? value : "all";
+}
+
 /**
  * This class represents a network of peers and handles peer to peer connections.
  *
@@ -310,6 +320,7 @@ export class PeerToPeer extends EventTarget {
     });
     /** @type {String[]} */
     _iceServers;
+    _iceTransportPolicy = "all";
     _isPendingNotify = false;
     _notificationsToSend = new Map();
     _isAntiGlareEnabled = true;
@@ -373,19 +384,26 @@ export class PeerToPeer extends EventTarget {
      * @param {object} [options]
      * @param {Info} [options.info={}]
      * @param {array} [options.iceServers=DEFAULT_ICE_SERVERS]
+     * @param {"all"|"relay"} [options.iceTransportPolicy="all"]
      */
-    connect(selfId, channelId, { info = {}, iceServers = DEFAULT_ICE_SERVERS } = {}) {
+    connect(
+        selfId,
+        channelId,
+        { info = {}, iceServers = DEFAULT_ICE_SERVERS, iceTransportPolicy = "all" } = {}
+    ) {
         if (!IS_CLIENT_RTC_COMPATIBLE) {
             throw new Error("RTCPeerConnection is not supported");
         }
         this.selfId = selfId;
         this.channelId = channelId;
         this._iceServers = sanitizeIntranetIceServers(iceServers);
+        this._iceTransportPolicy = sanitizeIceTransportPolicy(iceTransportPolicy);
         this._localInfo = Object.assign(this._localInfo, info);
         intranetRtcLog("info", "PeerToPeer.connect", {
             selfId,
             channelId,
             iceServers: summarizeIceServersForLog(this._iceServers),
+            iceTransportPolicy: this._iceTransportPolicy,
             browser: summarizeBrowserRtcEnvironment(),
         });
     }
@@ -912,7 +930,10 @@ export class PeerToPeer extends EventTarget {
      */
     _createPeer(id, options = {}) {
         this.removePeer(id);
-        const peerConnection = new window.RTCPeerConnection({ iceServers: this._iceServers });
+        const peerConnection = new window.RTCPeerConnection({
+            iceServers: this._iceServers,
+            iceTransportPolicy: this._iceTransportPolicy,
+        });
         const dataChannel = peerConnection.createDataChannel("notifications", {
             negotiated: true,
             id: 1,
@@ -922,6 +943,7 @@ export class PeerToPeer extends EventTarget {
             selfId: this.selfId,
             channelId: this.channelId,
             iceServers: summarizeIceServersForLog(this._iceServers),
+            iceTransportPolicy: this._iceTransportPolicy,
             signalingState: peerConnection.signalingState,
             iceGatheringState: peerConnection.iceGatheringState,
             iceConnectionState: peerConnection.iceConnectionState,

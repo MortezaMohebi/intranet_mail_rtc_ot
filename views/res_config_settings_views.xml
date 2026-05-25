@@ -41,7 +41,7 @@
                     </setting>
                     <setting id="intranet_rtc_custom_ice_setting"
                              string="Allow Custom Local ICE Servers"
-                             help="Allow only validated private/local STUN or TURN records from Discuss ICE Servers. Public hosts are rejected."
+                             help="Allow only validated private/local STUN, TURN, or TURNS records from Discuss ICE Servers. Public hosts are rejected."
                              invisible="not intranet_rtc_enabled">
                         <field name="intranet_rtc_allow_custom_local_ice_servers"/>
                         <div class="content-group mt16" invisible="not intranet_rtc_allow_custom_local_ice_servers">
@@ -50,6 +50,12 @@
                                    class="w-100"
                                    placeholder=".local,.lan,.internal,.intra"/>
                         </div>
+                    </setting>
+                    <setting id="intranet_rtc_ice_transport_policy_setting"
+                             string="ICE Transport Policy"
+                             help="Use All candidates for normal intranet behavior. Use Relay only when a local TURN/TURNS relay is configured and direct P2P must be avoided."
+                             invisible="not intranet_rtc_enabled">
+                        <field name="intranet_rtc_ice_transport_policy"/>
                     </setting>
                     <setting id="intranet_rtc_local_sfu_setting"
                              string="Local SFU Only"

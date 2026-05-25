@@ -19,7 +19,9 @@ class TestIntranetRtcBackend(TransactionCase):
         self.params.set_param("intranet_mail_rtc_ot.disable_twilio_rtc", "True")
         self.params.set_param("intranet_mail_rtc_ot.force_empty_ice_servers", "True")
         self.params.set_param("mail.use_twilio_rtc_servers", "False")
-        self.channel = self.env["discuss.channel"].create({"name": "RTC Test", "channel_type": "group"})
+        self.channel = self.env["discuss.channel"].create(
+            {"name": "RTC Test", "channel_type": "group"}
+        )
         self.member = self.channel._find_or_create_member_for_self()
 
     def test_rtc_join_uses_explicit_empty_ice_servers(self):
@@ -30,6 +32,7 @@ class TestIntranetRtcBackend(TransactionCase):
         rtc_records = result.get("Rtc", []) if isinstance(result, dict) else []
         self.assertTrue(rtc_records)
         self.assertEqual(rtc_records[0].get("iceServers"), [])
+        self.assertEqual(rtc_records[0].get("iceTransportPolicy"), "all")
 
     def test_sfu_external_url_rejected(self):
         """External SFU URL is blocked in intranet mode."""

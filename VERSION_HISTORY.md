@@ -53,3 +53,13 @@
 - Explained why same-LAN users can hear each other while home/remote users may need VPN, local TURN, or local SFU.
 - Added setup guidance for direct P2P, local TURN, local SFU, browser permissions, diagnostics, and troubleshooting.
 
+## 18.0.1.0.7
+
+- Add full `turns:` ICE server support.
+- Support secure TURN over TLS for locked networks.
+- Support TURNS over TCP 443.
+- Prevent double-prefix ICE URL generation.
+- Treat `turns:` as a TURN-capable relay URL in frontend checks.
+- Improve safe diagnostics for TURNS records.
+- Preserve direct P2P toggle behavior from 18.0.1.0.6.
+- Preserve blocked external fallback behavior.

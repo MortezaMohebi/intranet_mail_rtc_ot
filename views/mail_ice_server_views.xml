@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_ice_server_list_inherit_intranet_rtc" model="ir.ui.view">
+        <field name="name">mail.ice.server.list.inherit.intranet.rtc</field>
+        <field name="model">mail.ice.server</field>
+        <field name="inherit_id" ref="mail.view_ice_server_tree"/>
+        <field name="arch" type="xml">
+            <field name="uri" position="attributes">
+                <attribute name="placeholder">turn.example.com:443?transport=tcp</attribute>
+            </field>
+            <field name="username" position="attributes">
+                <attribute name="required">server_type in ('turn', 'turns')</attribute>
+            </field>
+            <field name="credential" position="attributes">
+                <attribute name="required">server_type in ('turn', 'turns')</attribute>
+                <attribute name="password">True</attribute>
+            </field>
+        </field>
+    </record>
+
+    <record id="view_ice_server_form_inherit_intranet_rtc" model="ir.ui.view">
+        <field name="name">mail.ice.server.form.inherit.intranet.rtc</field>
+        <field name="model">mail.ice.server</field>
+        <field name="inherit_id" ref="mail.view_ice_server_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//group[.//field[@name='server_type']]/div[@name='URI']" position="after">
+                <div class="text-muted mt8" colspan="2">
+                    For secure TURN over TLS, choose <strong>turns:</strong> and enter only
+                    <code>turn.example.com:443?transport=tcp</code> in URI.
+                    Do not enter <code>turns:turn.example.com:443?transport=tcp</code>;
+                    the module normalizes pasted prefixes to prevent double-prefix URLs.
+                </div>
+            </xpath>
+            <field name="uri" position="attributes">
+                <attribute name="placeholder">turn.example.com:443?transport=tcp</attribute>
+            </field>
+            <field name="username" position="attributes">
+                <attribute name="required">server_type in ('turn', 'turns')</attribute>
+            </field>
+            <field name="credential" position="attributes">
+                <attribute name="required">server_type in ('turn', 'turns')</attribute>
+                <attribute name="password">True</attribute>
+            </field>
+        </field>
+    </record>
+</odoo>

@@ -14,6 +14,7 @@ SAFE_DEFAULTS = {
     "intranet_mail_rtc_ot.allow_local_sfu": "False",
     "intranet_mail_rtc_ot.allowed_sfu_hosts": "",
     "intranet_mail_rtc_ot.allowed_ice_host_suffixes": ".local,.lan,.internal,.intra",
+    "intranet_mail_rtc_ot.ice_transport_policy": "all",
     "intranet_mail_rtc_ot.disable_twilio_rtc": "True",
     "intranet_mail_rtc_ot.disable_external_push": "True",
     "intranet_mail_rtc_ot.disable_external_gif": "True",
