@@ -3,12 +3,14 @@
 
 import logging
 
-from odoo import models
+from odoo import _, models
+from odoo.exceptions import UserError
 from odoo.addons.mail.tools.discuss import Store
 
 from .intranet_rtc_policy import (
     debug_log,
     is_allowed_sfu_url,
+    is_direct_p2p_fallback_enabled,
     is_enabled,
     sanitize_ice_servers,
 )
@@ -21,17 +23,40 @@ class DiscussChannelMember(models.Model):
 
     _inherit = "discuss.channel.member"
 
+
+    def _intranet_rtc_has_allowed_transport(self):
+        """Return whether RTC has an allowed P2P, ICE, or SFU transport."""
+        if not is_enabled(self.env):
+            return True
+        if is_direct_p2p_fallback_enabled(self.env):
+            return True
+        effective_ice_servers = self.env["mail.ice.server"]._get_ice_servers() or []
+        if effective_ice_servers:
+            return True
+        sfu_url = self.env["ir.config_parameter"].sudo().get_param("mail.sfu_server_url")
+        return bool(sfu_url and is_allowed_sfu_url(self.env, sfu_url))
+
     def _rtc_join_call(self, store=None, check_rtc_session_ids=None, camera=False):
         """Join an RTC call and force explicit empty ICE servers when required."""
         debug_log(
             self.env,
-            "RTC join: channel_ids=%s member_ids=%s camera=%s store=%s intranet_enabled=%s.",
+            "RTC join: channel_ids=%s member_ids=%s camera=%s store=%s intranet_enabled=%s direct_p2p_fallback=%s.",
             self.mapped("channel_id").ids,
             self.ids,
             camera,
             bool(store),
             is_enabled(self.env),
+            is_direct_p2p_fallback_enabled(self.env),
         )
+        if is_enabled(self.env) and not self._intranet_rtc_has_allowed_transport():
+            raise UserError(
+                _(
+                    "Intranet RTC direct P2P fallback is disabled, but no validated "
+                    "local ICE server or allowed local SFU is configured. Configure a "
+                    "local TURN/STUN/SFU server, or enable Direct P2P Fallback in "
+                    "Discuss settings."
+                )
+            )
         result = super()._rtc_join_call(
             store=store,
             check_rtc_session_ids=check_rtc_session_ids,

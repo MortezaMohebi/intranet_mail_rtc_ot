@@ -2,6 +2,7 @@
 """Test backend RTC intranet behavior."""
 
 from odoo.addons.mail.tools.discuss import Store
+from odoo.exceptions import UserError
 from odoo.tests.common import TransactionCase, tagged
 
 
@@ -16,6 +17,7 @@ class TestIntranetRtcBackend(TransactionCase):
         self.params.set_param("intranet_mail_rtc_ot.enabled", "True")
         self.params.set_param("intranet_mail_rtc_ot.allow_custom_local_ice_servers", "False")
         self.params.set_param("intranet_mail_rtc_ot.disable_twilio_rtc", "True")
+        self.params.set_param("intranet_mail_rtc_ot.force_empty_ice_servers", "True")
         self.params.set_param("mail.use_twilio_rtc_servers", "False")
         self.channel = self.env["discuss.channel"].create({"name": "RTC Test", "channel_type": "group"})
         self.member = self.channel._find_or_create_member_for_self()
@@ -44,3 +46,9 @@ class TestIntranetRtcBackend(TransactionCase):
         from odoo.addons.intranet_mail_rtc_ot.models.intranet_rtc_policy import is_allowed_sfu_url
 
         self.assertTrue(is_allowed_sfu_url(self.env, "https://rtc.internal"))
+
+    def test_rtc_join_blocked_when_direct_p2p_disabled_without_local_transport(self):
+        """RTC join is blocked when direct P2P fallback is disabled and no local relay exists."""
+        self.params.set_param("intranet_mail_rtc_ot.force_empty_ice_servers", "False")
+        with self.assertRaises(UserError):
+            self.member.sudo()._rtc_join_call(store=Store(), camera=False)

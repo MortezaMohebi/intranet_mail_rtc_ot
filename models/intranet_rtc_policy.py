@@ -40,6 +40,16 @@ def is_enabled(env):
     return get_bool_param(env, "intranet_mail_rtc_ot.enabled", default=True)
 
 
+
+
+def is_direct_p2p_fallback_enabled(env):
+    """Return whether host-candidate P2P fallback is allowed without local ICE/SFU."""
+    return get_bool_param(
+        env,
+        "intranet_mail_rtc_ot.force_empty_ice_servers",
+        default=True,
+    )
+
 def is_debug_enabled(env):
     """Return whether verbose RTC debug logs are enabled."""
     return get_bool_param(env, "intranet_mail_rtc_ot.debug_rtc_logs", default=False)
@@ -132,10 +142,16 @@ def sanitize_ice_servers(env, ice_servers):
     if not is_enabled(env):
         return ice_servers or []
     if not get_bool_param(env, "intranet_mail_rtc_ot.allow_custom_local_ice_servers", default=False):
-        debug_log(
-            env,
-            "ICE policy: custom local ICE servers disabled; forcing empty iceServers list.",
-        )
+        if is_direct_p2p_fallback_enabled(env):
+            debug_log(
+                env,
+                "ICE policy: custom local ICE servers disabled; direct P2P fallback will use empty iceServers list.",
+            )
+        else:
+            debug_log(
+                env,
+                "ICE policy: custom local ICE servers disabled and direct P2P fallback disabled; no ICE servers are available.",
+            )
         return []
     debug_log(env, "ICE policy: sanitizing %s configured ICE server entries.", len(ice_servers or []))
     sanitized = []

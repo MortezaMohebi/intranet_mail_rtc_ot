@@ -26,6 +26,7 @@
                         <group string="RTC Policy">
                             <field name="intranet_mode_enabled" readonly="1" widget="boolean_toggle"/>
                             <field name="google_stun_fallback_blocked" readonly="1" widget="boolean_toggle"/>
+                            <field name="direct_p2p_fallback_enabled" readonly="1" widget="boolean_toggle"/>
                             <field name="twilio_rtc_disabled" readonly="1" widget="boolean_toggle"/>
                             <field name="effective_ice_server_count" readonly="1"/>
                         </group>

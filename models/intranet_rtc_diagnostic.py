@@ -9,7 +9,7 @@ from odoo import fields, models
 from odoo.modules.module import get_module_path
 from odoo.tools import config
 
-from .intranet_rtc_policy import get_bool_param, is_allowed_sfu_url, is_enabled
+from .intranet_rtc_policy import get_bool_param, is_allowed_sfu_url, is_direct_p2p_fallback_enabled, is_enabled
 
 
 class IntranetRtcDiagnostic(models.TransientModel):
@@ -21,6 +21,7 @@ class IntranetRtcDiagnostic(models.TransientModel):
     name = fields.Char(default="Intranet RTC Diagnostics", readonly=True)
     intranet_mode_enabled = fields.Boolean(string="Intranet Mode", readonly=True)
     google_stun_fallback_blocked = fields.Boolean(string="Google STUN Blocked", readonly=True)
+    direct_p2p_fallback_enabled = fields.Boolean(string="Direct P2P Fallback", readonly=True)
     twilio_rtc_disabled = fields.Boolean(string="Twilio RTC Disabled", readonly=True)
     sfu_allowed = fields.Boolean(string="SFU Allowed", readonly=True)
     sfu_url_configured = fields.Boolean(string="SFU URL Configured", readonly=True)
@@ -122,6 +123,7 @@ class IntranetRtcDiagnostic(models.TransientModel):
             "effective_ice_server_count": len(effective_ice_servers),
             "effective_ice_servers_sent_to_clients_safe": safe_ice_servers,
             "google_stun_fallback_blocked": is_enabled(self.env),
+            "direct_p2p_fallback_enabled": is_direct_p2p_fallback_enabled(self.env),
             "twilio_rtc_disabled": get_bool_param(
                 self.env,
                 "intranet_mail_rtc_ot.disable_twilio_rtc",
@@ -145,9 +147,13 @@ class IntranetRtcDiagnostic(models.TransientModel):
             warnings.append("No gevent/longpolling port found in Odoo config; /websocket may not be usable.")
         if forbidden_refs:
             warnings.append("Forbidden runtime references were found in module runtime files.")
-        if not effective_ice_servers:
+        if not effective_ice_servers and is_direct_p2p_fallback_enabled(self.env):
             warnings.append(
                 "ICE servers are empty. Direct host-candidate P2P may fail across NAT/firewalls; use local TURN or local SFU if required."
+            )
+        if not effective_ice_servers and not is_direct_p2p_fallback_enabled(self.env) and not diagnostics["sfu_allowed"]:
+            warnings.append(
+                "Direct P2P fallback is disabled and no local ICE/SFU transport is available. Discuss calls will be blocked until a local TURN/STUN/SFU is configured."
             )
         return diagnostics, "\n".join(warnings)
 
@@ -162,6 +168,7 @@ class IntranetRtcDiagnostic(models.TransientModel):
                 {
                     "intranet_mode_enabled": diagnostics["intranet_mode_enabled"],
                     "google_stun_fallback_blocked": diagnostics["google_stun_fallback_blocked"],
+                    "direct_p2p_fallback_enabled": diagnostics["direct_p2p_fallback_enabled"],
                     "twilio_rtc_disabled": diagnostics["twilio_rtc_disabled"],
                     "sfu_allowed": diagnostics["sfu_allowed"],
                     "sfu_url_configured": diagnostics["sfu_url_configured"],

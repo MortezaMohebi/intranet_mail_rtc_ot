@@ -38,6 +38,14 @@
 - Moved diagnostics from the generic Technical menu to Discuss > Configuration.
 - Redesigned diagnostics form with grouped status fields, warnings, and a technical JSON tab.
 - Sanitized diagnostic ICE output to avoid exposing TURN usernames or credentials.
+
+## 18.0.1.0.6
+
+- Fixed the Direct P2P setting so unchecked values persist from the Settings UI.
+- Renamed the setting to **Allow Direct P2P Fallback** for clearer meaning.
+- When Direct P2P Fallback is disabled and no local ICE/SFU transport exists, calls are blocked with an actionable error instead of silently using host-candidate P2P.
+- Diagnostics now show whether Direct P2P Fallback is enabled and warn when no usable local transport is available.
+
 ## 18.0.1.0.5
 
 - Expanded README with a practical user and administrator guide.

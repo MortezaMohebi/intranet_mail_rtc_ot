@@ -34,13 +34,13 @@
 
                 <block title="Intranet RTC: Call Transport" id="intranet_rtc_transport_ot" groups="base.group_system">
                     <setting id="intranet_rtc_force_empty_ice_setting"
-                             string="Direct P2P Without ICE Servers"
-                             help="Send iceServers: [] when no local ICE server is allowed. This prevents Google STUN fallback and uses host-candidate P2P only."
+                             string="Allow Direct P2P Fallback"
+                             help="Allow calls to continue with iceServers: [] when no local TURN/STUN/SFU exists. Disable this only when you require calls to use a local relay/SFU; calls will be blocked until one is configured."
                              invisible="not intranet_rtc_enabled">
                         <field name="intranet_rtc_force_empty_ice_servers"/>
                     </setting>
                     <setting id="intranet_rtc_custom_ice_setting"
-                             string="Custom Local ICE Servers"
+                             string="Allow Custom Local ICE Servers"
                              help="Allow only validated private/local STUN or TURN records from Discuss ICE Servers. Public hosts are rejected."
                              invisible="not intranet_rtc_enabled">
                         <field name="intranet_rtc_allow_custom_local_ice_servers"/>

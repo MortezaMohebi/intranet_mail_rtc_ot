@@ -19,7 +19,10 @@ class ResConfigSettings(models.TransientModel):
         string="Force Empty ICE Servers",
         config_parameter="intranet_mail_rtc_ot.force_empty_ice_servers",
         default=True,
-        help="Send an explicit empty iceServers list when no local ICE server is allowed.",
+        help=(
+            "Allow direct host-candidate P2P when no validated local TURN/STUN/SFU "
+            "is configured. Disable this only when calls must use a local relay/SFU."
+        ),
     )
     intranet_rtc_allow_custom_local_ice_servers = fields.Boolean(
         string="Allow Custom Local ICE Servers",
@@ -86,6 +89,71 @@ class ResConfigSettings(models.TransientModel):
         default=False,
         help="Enable limited debug logs without exposing secrets.",
     )
+
+
+    def get_values(self):
+        """Read boolean parameters explicitly so unchecked values stay unchecked."""
+        values = super().get_values()
+        params = self.env["ir.config_parameter"].sudo()
+        boolean_defaults = {
+            "intranet_rtc_enabled": True,
+            "intranet_rtc_force_empty_ice_servers": True,
+            "intranet_rtc_allow_custom_local_ice_servers": False,
+            "intranet_rtc_allow_local_sfu": False,
+            "intranet_rtc_disable_twilio_rtc": True,
+            "intranet_rtc_disable_external_push": True,
+            "intranet_rtc_disable_external_gif": True,
+            "intranet_rtc_disable_external_translate": True,
+            "intranet_rtc_disable_external_link_preview": True,
+            "intranet_rtc_use_local_blur_assets": True,
+            "intranet_rtc_debug_logs": False,
+        }
+        key_by_field = {
+            "intranet_rtc_enabled": "intranet_mail_rtc_ot.enabled",
+            "intranet_rtc_force_empty_ice_servers": "intranet_mail_rtc_ot.force_empty_ice_servers",
+            "intranet_rtc_allow_custom_local_ice_servers": "intranet_mail_rtc_ot.allow_custom_local_ice_servers",
+            "intranet_rtc_allow_local_sfu": "intranet_mail_rtc_ot.allow_local_sfu",
+            "intranet_rtc_disable_twilio_rtc": "intranet_mail_rtc_ot.disable_twilio_rtc",
+            "intranet_rtc_disable_external_push": "intranet_mail_rtc_ot.disable_external_push",
+            "intranet_rtc_disable_external_gif": "intranet_mail_rtc_ot.disable_external_gif",
+            "intranet_rtc_disable_external_translate": "intranet_mail_rtc_ot.disable_external_translate",
+            "intranet_rtc_disable_external_link_preview": "intranet_mail_rtc_ot.disable_external_link_preview",
+            "intranet_rtc_use_local_blur_assets": "intranet_mail_rtc_ot.use_local_blur_assets",
+            "intranet_rtc_debug_logs": "intranet_mail_rtc_ot.debug_rtc_logs",
+        }
+        for field_name, key in key_by_field.items():
+            raw_value = params.get_param(key)
+            if raw_value is None:
+                values[field_name] = boolean_defaults[field_name]
+            else:
+                values[field_name] = str(raw_value).strip().lower() in {
+                    "1",
+                    "true",
+                    "yes",
+                    "y",
+                    "on",
+                }
+        return values
+
+    def set_values(self):
+        """Persist settings explicitly, including unchecked boolean fields."""
+        super().set_values()
+        params = self.env["ir.config_parameter"].sudo()
+        boolean_key_by_field = {
+            "intranet_rtc_enabled": "intranet_mail_rtc_ot.enabled",
+            "intranet_rtc_force_empty_ice_servers": "intranet_mail_rtc_ot.force_empty_ice_servers",
+            "intranet_rtc_allow_custom_local_ice_servers": "intranet_mail_rtc_ot.allow_custom_local_ice_servers",
+            "intranet_rtc_allow_local_sfu": "intranet_mail_rtc_ot.allow_local_sfu",
+            "intranet_rtc_disable_twilio_rtc": "intranet_mail_rtc_ot.disable_twilio_rtc",
+            "intranet_rtc_disable_external_push": "intranet_mail_rtc_ot.disable_external_push",
+            "intranet_rtc_disable_external_gif": "intranet_mail_rtc_ot.disable_external_gif",
+            "intranet_rtc_disable_external_translate": "intranet_mail_rtc_ot.disable_external_translate",
+            "intranet_rtc_disable_external_link_preview": "intranet_mail_rtc_ot.disable_external_link_preview",
+            "intranet_rtc_use_local_blur_assets": "intranet_mail_rtc_ot.use_local_blur_assets",
+            "intranet_rtc_debug_logs": "intranet_mail_rtc_ot.debug_rtc_logs",
+        }
+        for field_name, key in boolean_key_by_field.items():
+            params.set_param(key, "True" if self[field_name] else "False")
 
     def action_open_intranet_rtc_diagnostics(self):
         """Open a fresh intranet RTC diagnostics wizard."""

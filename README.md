@@ -384,3 +384,13 @@ selfie_segmentation_solution_wasm_bin.wasm
 ```
 
 If these files are missing, calls should still work, but background blur will be disabled or degraded and diagnostics will report the missing files.
+
+
+### Direct P2P Fallback setting
+
+The setting **Allow Direct P2P Fallback** controls what happens when intranet mode is enabled but no validated local TURN/STUN/SFU transport is available.
+
+- Enabled: Odoo sends `iceServers: []`. Browsers try direct host-candidate P2P only. This works for same-LAN or fully routed intranet clients.
+- Disabled: Odoo refuses to start the RTC call unless a validated local ICE server or allowed local SFU is configured. This is useful when you do not want remote/home users to enter a call that cannot carry media.
+
+Disabling this setting does not re-enable Google STUN or Twilio. External fallbacks remain blocked.
