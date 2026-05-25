@@ -30,3 +30,11 @@
 - Add frontend debug logging for secure context checks, media permission failures, ICE candidates, ICE gathering, connection state, data channel state, offer/answer signaling, and remote track reception.
 - Frontend logs are silent by default and can be enabled per browser with `localStorage.setItem("intranet_mail_rtc_ot.debug", "1")`.
 - Add extra guidance for direct host-candidate P2P limitations on routed intranet/VLAN/firewall networks.
+
+## 18.0.1.0.4
+
+- Refactored Discuss settings UI into clean Odoo 18 settings blocks.
+- Replaced the crowded diagnostic button with a compact Open Diagnostics action.
+- Moved diagnostics from the generic Technical menu to Discuss > Configuration.
+- Redesigned diagnostics form with grouped status fields, warnings, and a technical JSON tab.
+- Sanitized diagnostic ICE output to avoid exposing TURN usernames or credentials.

@@ -6,14 +6,56 @@
         <field name="arch" type="xml">
             <form string="Intranet RTC Diagnostics">
                 <header>
-                    <button name="action_run_diagnostics" type="object" string="Run Intranet RTC Diagnostics" class="btn-primary"/>
+                    <button name="action_run_diagnostics"
+                            type="object"
+                            string="Refresh Diagnostics"
+                            class="btn-primary"
+                            icon="fa-refresh"/>
                 </header>
                 <sheet>
+                    <div class="oe_title">
+                        <h1>Intranet RTC Diagnostics</h1>
+                        <p class="text-muted">
+                            Validate Discuss calls for locked LAN and airgapped environments without exposing TURN credentials or external service secrets.
+                        </p>
+                    </div>
+                    <div class="alert alert-warning" role="alert" invisible="not warning_text">
+                        <field name="warning_text" readonly="1" nolabel="1"/>
+                    </div>
                     <group>
-                        <field name="name" readonly="1"/>
-                        <field name="warning_text" readonly="1" nolabel="1" placeholder="No warnings."/>
-                        <field name="status_json" readonly="1" nolabel="1" widget="text"/>
+                        <group string="RTC Policy">
+                            <field name="intranet_mode_enabled" readonly="1" widget="boolean_toggle"/>
+                            <field name="google_stun_fallback_blocked" readonly="1" widget="boolean_toggle"/>
+                            <field name="twilio_rtc_disabled" readonly="1" widget="boolean_toggle"/>
+                            <field name="effective_ice_server_count" readonly="1"/>
+                        </group>
+                        <group string="Connectivity">
+                            <field name="websocket_configured" readonly="1" widget="boolean_toggle"/>
+                            <field name="gevent_or_longpolling_port" readonly="1"/>
+                            <field name="proxy_mode_enabled" readonly="1" widget="boolean_toggle"/>
+                        </group>
                     </group>
+                    <group>
+                        <group string="SFU Policy">
+                            <field name="sfu_url_configured" readonly="1" widget="boolean_toggle"/>
+                            <field name="sfu_url_is_internal" readonly="1" widget="boolean_toggle"/>
+                            <field name="sfu_allowed" readonly="1" widget="boolean_toggle"/>
+                        </group>
+                        <group string="Local Assets">
+                            <field name="local_mediapipe_assets_ok" readonly="1" widget="boolean_toggle"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Missing Local Files" invisible="local_mediapipe_assets_ok">
+                            <field name="missing_mediapipe_files" readonly="1" nolabel="1" widget="text"/>
+                        </page>
+                        <page string="Forbidden Runtime References" invisible="not forbidden_runtime_refs">
+                            <field name="forbidden_runtime_refs" readonly="1" nolabel="1" widget="text"/>
+                        </page>
+                        <page string="Technical JSON" groups="intranet_mail_rtc_ot.group_intranet_rtc_technical,base.group_system">
+                            <field name="status_json" readonly="1" nolabel="1" widget="text"/>
+                        </page>
+                    </notebook>
                 </sheet>
             </form>
         </field>
@@ -23,9 +65,14 @@
         <field name="name">Intranet RTC Diagnostics</field>
         <field name="res_model">intranet.rtc.diagnostic</field>
         <field name="view_mode">form</field>
-        <field name="target">new</field>
+        <field name="target">current</field>
         <field name="context">{}</field>
     </record>
 
-    <menuitem id="intranet_rtc_diagnostic_menu" name="Intranet RTC" parent="base.menu_custom" action="intranet_rtc_diagnostic_action" groups="base.group_system" sequence="95"/>
+    <menuitem id="intranet_rtc_diagnostic_menu"
+              name="Intranet RTC Diagnostics"
+              parent="mail.menu_configuration"
+              action="intranet_rtc_diagnostic_action"
+              groups="base.group_system"
+              sequence="8"/>
 </odoo>

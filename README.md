@@ -68,3 +68,8 @@ Backend logs are controlled by the module setting **Debug RTC Logs**. When enabl
 With `iceServers: []`, WebRTC can only use direct host candidates. If clients are separated by VLANs, routed segments, NAT, endpoint firewall rules, or browser policies, calls may start but no media will flow. In that case, deploy an explicitly configured local TURN server or local SFU; this module intentionally will not fall back to Google, Twilio, or public STUN/TURN.
 
 Also prefer HTTPS even on private IP addresses. Modern browsers restrict camera/microphone APIs to secure contexts, except limited localhost exceptions. If testing with `http://192.168.x.x`, the debug logger will show whether `window.isSecureContext` and `navigator.mediaDevices` are available.
+
+
+## 18.0.1.0.4 UI Update
+
+The settings are now split into professional Odoo settings blocks under Settings > Discuss, and diagnostics are available under Discuss > Configuration > Intranet RTC Diagnostics.

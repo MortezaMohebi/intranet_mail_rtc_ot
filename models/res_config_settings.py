@@ -98,4 +98,5 @@ class ResConfigSettings(models.TransientModel):
             "view_mode": "form",
             "res_id": wizard.id,
             "target": "new",
+            "view_id": self.env.ref("intranet_mail_rtc_ot.intranet_rtc_diagnostic_view_form").id,
         }

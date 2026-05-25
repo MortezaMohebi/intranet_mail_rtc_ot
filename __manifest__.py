@@ -2,7 +2,7 @@
 {
     "name": "Intranet Mail RTC",
     "summary": "Make Odoo Discuss RTC safe for intranet and airgapped deployments.",
-    "version": "18.0.1.0.3",
+    "version": "18.0.1.0.4",
     "category": "Discuss",
     "author": "Odootech",
     "website": "https://odootech.ir",

@@ -5,64 +5,105 @@
         <field name="model">res.config.settings</field>
         <field name="inherit_id" ref="mail.res_config_settings_view_form"/>
         <field name="arch" type="xml">
-            <setting id="message_translation_setting" position="after">
-                <setting id="intranet_rtc_mode_setting" string="Intranet RTC Mode" help="Block public RTC fallbacks and make Discuss calls safe for locked intranet networks." groups="base.group_system">
-                    <field name="intranet_rtc_enabled"/>
-                    <div class="content-group" invisible="not intranet_rtc_enabled">
-                        <div class="row mt16">
-                            <label for="intranet_rtc_force_empty_ice_servers" class="col-lg-4"/>
-                            <field name="intranet_rtc_force_empty_ice_servers"/>
+            <block id="discuss" position="after">
+                <block title="Intranet RTC" id="intranet_rtc_ot" groups="base.group_system">
+                    <setting id="intranet_rtc_enabled_setting"
+                             string="Enable Intranet RTC Mode"
+                             help="Use Discuss calls in locked LAN or airgapped deployments without public STUN, TURN, SFU, or CDN fallbacks.">
+                        <field name="intranet_rtc_enabled"/>
+                    </setting>
+                    <setting id="intranet_rtc_blur_assets_setting"
+                             string="Local Background Blur Assets"
+                             help="Load MediaPipe Selfie Segmentation files from this Odoo module instead of jsDelivr CDN."
+                             invisible="not intranet_rtc_enabled">
+                        <field name="intranet_rtc_use_local_blur_assets"/>
+                    </setting>
+                    <setting id="intranet_rtc_diagnostics_setting"
+                             string="Diagnostics"
+                             help="Open a clean administrator-only diagnostic screen for ICE, SFU, WebSocket, and local MediaPipe asset status."
+                             invisible="not intranet_rtc_enabled">
+                        <div class="content-group">
+                            <button name="action_open_intranet_rtc_diagnostics"
+                                    type="object"
+                                    string="Open Diagnostics"
+                                    class="btn-link"
+                                    icon="oi-arrow-right"/>
                         </div>
-                        <div class="row mt16">
-                            <label for="intranet_rtc_allow_custom_local_ice_servers" class="col-lg-4"/>
-                            <field name="intranet_rtc_allow_custom_local_ice_servers"/>
+                    </setting>
+                </block>
+
+                <block title="Intranet RTC: Call Transport" id="intranet_rtc_transport_ot" groups="base.group_system">
+                    <setting id="intranet_rtc_force_empty_ice_setting"
+                             string="Direct P2P Without ICE Servers"
+                             help="Send iceServers: [] when no local ICE server is allowed. This prevents Google STUN fallback and uses host-candidate P2P only."
+                             invisible="not intranet_rtc_enabled">
+                        <field name="intranet_rtc_force_empty_ice_servers"/>
+                    </setting>
+                    <setting id="intranet_rtc_custom_ice_setting"
+                             string="Custom Local ICE Servers"
+                             help="Allow only validated private/local STUN or TURN records from Discuss ICE Servers. Public hosts are rejected."
+                             invisible="not intranet_rtc_enabled">
+                        <field name="intranet_rtc_allow_custom_local_ice_servers"/>
+                        <div class="content-group mt16" invisible="not intranet_rtc_allow_custom_local_ice_servers">
+                            <label for="intranet_rtc_allowed_ice_host_suffixes" string="Allowed internal suffixes"/>
+                            <field name="intranet_rtc_allowed_ice_host_suffixes"
+                                   class="w-100"
+                                   placeholder=".local,.lan,.internal,.intra"/>
                         </div>
-                        <div class="row mt16" invisible="not intranet_rtc_allow_custom_local_ice_servers">
-                            <label for="intranet_rtc_allowed_ice_host_suffixes" class="col-lg-4"/>
-                            <field name="intranet_rtc_allowed_ice_host_suffixes" placeholder=".local,.lan,.internal,.intra"/>
+                    </setting>
+                    <setting id="intranet_rtc_local_sfu_setting"
+                             string="Local SFU Only"
+                             help="Allow an SFU only when its host is explicitly configured as local/internal. Empty or blocked SFU settings keep calls in P2P mode."
+                             invisible="not intranet_rtc_enabled">
+                        <field name="intranet_rtc_allow_local_sfu"/>
+                        <div class="content-group mt16" invisible="not intranet_rtc_allow_local_sfu">
+                            <label for="intranet_rtc_allowed_sfu_hosts" string="Allowed SFU hosts"/>
+                            <field name="intranet_rtc_allowed_sfu_hosts"
+                                   class="w-100"
+                                   placeholder="rtc.local,10.10.0.20,.internal"/>
                         </div>
-                        <div class="row mt16">
-                            <label for="intranet_rtc_allow_local_sfu" class="col-lg-4"/>
-                            <field name="intranet_rtc_allow_local_sfu"/>
-                        </div>
-                        <div class="row mt16" invisible="not intranet_rtc_allow_local_sfu">
-                            <label for="intranet_rtc_allowed_sfu_hosts" class="col-lg-4"/>
-                            <field name="intranet_rtc_allowed_sfu_hosts" placeholder="rtc.local,10.10.0.20"/>
-                        </div>
-                        <div class="row mt16">
-                            <label for="intranet_rtc_disable_twilio_rtc" class="col-lg-4"/>
-                            <field name="intranet_rtc_disable_twilio_rtc"/>
-                        </div>
-                        <div class="row mt16">
-                            <label for="intranet_rtc_disable_external_push" class="col-lg-4"/>
-                            <field name="intranet_rtc_disable_external_push"/>
-                        </div>
-                        <div class="row mt16">
-                            <label for="intranet_rtc_disable_external_gif" class="col-lg-4"/>
-                            <field name="intranet_rtc_disable_external_gif"/>
-                        </div>
-                        <div class="row mt16">
-                            <label for="intranet_rtc_disable_external_translate" class="col-lg-4"/>
-                            <field name="intranet_rtc_disable_external_translate"/>
-                        </div>
-                        <div class="row mt16">
-                            <label for="intranet_rtc_disable_external_link_preview" class="col-lg-4"/>
-                            <field name="intranet_rtc_disable_external_link_preview"/>
-                        </div>
-                        <div class="row mt16">
-                            <label for="intranet_rtc_use_local_blur_assets" class="col-lg-4"/>
-                            <field name="intranet_rtc_use_local_blur_assets"/>
-                        </div>
-                        <div class="row mt16">
-                            <label for="intranet_rtc_debug_logs" class="col-lg-4"/>
-                            <field name="intranet_rtc_debug_logs"/>
-                        </div>
-                        <div class="mt16">
-                            <button name="action_open_intranet_rtc_diagnostics" type="object" string="Run Intranet RTC Diagnostics" class="btn btn-secondary" icon="fa-stethoscope"/>
-                        </div>
-                    </div>
-                </setting>
-            </setting>
+                    </setting>
+                </block>
+
+                <block title="Intranet RTC: Blocked External Services" id="intranet_rtc_external_services_ot" groups="base.group_system">
+                    <setting id="intranet_rtc_disable_twilio_setting"
+                             string="Disable Twilio RTC"
+                             help="Prevent Odoo from requesting Twilio RTC credentials while intranet mode is enabled."
+                             invisible="not intranet_rtc_enabled">
+                        <field name="intranet_rtc_disable_twilio_rtc"/>
+                    </setting>
+                    <setting id="intranet_rtc_disable_push_setting"
+                             string="Disable External Web Push"
+                             help="Block browser push endpoint operations that leave the intranet."
+                             invisible="not intranet_rtc_enabled">
+                        <field name="intranet_rtc_disable_external_push"/>
+                    </setting>
+                    <setting id="intranet_rtc_disable_gif_setting"
+                             string="Disable Tenor GIF"
+                             help="Block Discuss GIF lookups that require the external Tenor API."
+                             invisible="not intranet_rtc_enabled">
+                        <field name="intranet_rtc_disable_external_gif"/>
+                    </setting>
+                    <setting id="intranet_rtc_disable_translate_setting"
+                             string="Disable Google Translate"
+                             help="Block Discuss message translation calls to external Google APIs."
+                             invisible="not intranet_rtc_enabled">
+                        <field name="intranet_rtc_disable_external_translate"/>
+                    </setting>
+                    <setting id="intranet_rtc_disable_link_preview_setting"
+                             string="Disable External Link Preview"
+                             help="Disable server-side fetching of external URLs for link previews."
+                             invisible="not intranet_rtc_enabled">
+                        <field name="intranet_rtc_disable_external_link_preview"/>
+                    </setting>
+                    <setting id="intranet_rtc_debug_setting"
+                             string="Debug RTC Logs"
+                             help="Enable limited backend and browser diagnostics. Leave disabled in production after testing."
+                             invisible="not intranet_rtc_enabled">
+                        <field name="intranet_rtc_debug_logs"/>
+                    </setting>
+                </block>
+            </block>
         </field>
     </record>
 </odoo>
